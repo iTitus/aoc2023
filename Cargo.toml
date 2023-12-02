@@ -1,0 +1,22 @@
+[package]
+name = "aoc2023"
+version = "0.1.0"
+edition = "2021"
+repository = "https://github.com/iTitus/aoc2023"
+license = "MIT"
+
+[dependencies]
+anyhow = "1.0"
+aoc-runner = "0.3"
+aoc-runner-derive = "0.3"
+itertools = "0.12"
+lazy_static = "1.4"
+nalgebra = "0.32"
+num = "0.4"
+pathfinding = "4.1"
+regex = "1"
+rustc-hash = "1.1"
+tinyvec = "1.6"
+
+[dev-dependencies]
+pretty_assertions = "1.3"
