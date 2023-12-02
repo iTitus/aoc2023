@@ -107,6 +107,6 @@ xtwone3four
 zoneight234
 7pqrstsixteen"#;
 
-        assert_eq!(part1(&input_generator_2(INPUT)), 281)
+        assert_eq!(part2(&input_generator_2(INPUT)), 281)
     }
 }
