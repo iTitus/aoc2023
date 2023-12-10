@@ -1,7 +1,6 @@
-use std::collections::HashMap;
-
 use aoc_runner_derive::{aoc, aoc_generator};
 use regex::Regex;
+use rustc_hash::FxHashMap;
 
 #[aoc_generator(day3)]
 pub fn input_generator(input: &str) -> Vec<String> {
@@ -63,7 +62,7 @@ pub fn part2(input: &[String]) -> u32 {
 
     let re = Regex::new(r#"\d+"#).unwrap();
 
-    let mut gears: HashMap<(usize, usize), Vec<u32>> = HashMap::new();
+    let mut gears: FxHashMap<(usize, usize), Vec<u32>> = FxHashMap::default();
     for (i, l) in input.iter().enumerate() {
         for m in re.find_iter(l) {
             let start = m.start();

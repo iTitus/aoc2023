@@ -1,14 +1,14 @@
-use std::collections::HashSet;
 use std::str::FromStr;
 
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
+use rustc_hash::FxHashSet;
 
 #[derive(Debug)]
 pub struct Card {
     _id: u32,
-    winning_numbers: HashSet<u32>,
-    my_numbers: HashSet<u32>,
+    winning_numbers: FxHashSet<u32>,
+    my_numbers: FxHashSet<u32>,
 }
 
 impl FromStr for Card {

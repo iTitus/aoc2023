@@ -1,9 +1,9 @@
-use std::collections::HashMap;
 use std::str::FromStr;
 
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use num::Integer;
+use rustc_hash::FxHashMap;
 
 #[derive(Debug)]
 pub enum Instruction {
@@ -26,7 +26,7 @@ impl TryFrom<char> for Instruction {
 #[derive(Debug)]
 pub struct Map {
     instructions: Vec<Instruction>,
-    graph: HashMap<String, (String, String)>,
+    graph: FxHashMap<String, (String, String)>,
 }
 
 impl FromStr for Map {
