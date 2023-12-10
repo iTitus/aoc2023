@@ -238,7 +238,7 @@ pub fn part1(input: &Pipes) -> usize {
     find_cycle(input).len() / 2
 }
 
-#[aoc(day10, part2)]
+#[aoc(day10, part2, area_scan)]
 pub fn part2(pipes: &Pipes) -> usize {
     let cycle: FxHashSet<_> = find_cycle(pipes).into_iter().collect();
     let mut inside_cycle_count = 0;
@@ -277,6 +277,19 @@ pub fn part2(pipes: &Pipes) -> usize {
     }
 
     inside_cycle_count
+}
+#[aoc(day10, part2, picks_theorem)]
+pub fn part2_pt(pipes: &Pipes) -> usize {
+    let cycle = find_cycle(pipes);
+    // shoelace formula to find the area of the cycle
+    let double_area = cycle
+        .iter()
+        .circular_tuple_windows()
+        .map(|(vp, v, vn)| v.x * (vn.y - vp.y))
+        .sum::<i32>()
+        .unsigned_abs() as usize;
+    // pick's theorem to find the number of integer coordinates inside the cycle
+    (double_area + 2 - cycle.len()) / 2
 }
 
 #[cfg(test)]
@@ -374,5 +387,20 @@ L7JLJL-JLJLJL--JLJ.L"#;
     #[test]
     fn test_part2_3() {
         assert_eq!(part2(&input_generator(INPUT_7)), 10)
+    }
+
+    #[test]
+    fn test_part2_pt_1() {
+        assert_eq!(part2_pt(&input_generator(INPUT_5)), 4)
+    }
+
+    #[test]
+    fn test_part2_pt_2() {
+        assert_eq!(part2_pt(&input_generator(INPUT_6)), 8)
+    }
+
+    #[test]
+    fn test_part2_pt_3() {
+        assert_eq!(part2_pt(&input_generator(INPUT_7)), 10)
     }
 }
