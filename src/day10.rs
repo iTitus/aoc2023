@@ -278,6 +278,7 @@ pub fn part2(pipes: &Pipes) -> usize {
 
     inside_cycle_count
 }
+
 #[aoc(day10, part2, picks_theorem)]
 pub fn part2_pt(pipes: &Pipes) -> usize {
     let cycle = find_cycle(pipes);
