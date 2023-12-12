@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
+use num::integer::ExtendedGcd;
 use num::Integer;
 use rustc_hash::FxHashMap;
 
@@ -68,6 +69,184 @@ impl FromStr for Map {
     }
 }
 
+#[derive(Debug)]
+struct LoopInformationSystem {
+    infos: Vec<LoopInformation>,
+}
+
+impl LoopInformationSystem {
+    fn create(map: &Map, start: impl Fn(&str) -> bool, end: impl Fn(&str) -> bool) -> Self {
+        Self {
+            infos: map
+                .graph
+                .keys()
+                .filter(|n| start(n.as_str()))
+                .map(|start| {
+                    // (node, pattern_offset) -> (index, looped, end)
+                    let mut all_nodes: FxHashMap<(&str, usize), (usize, bool, bool)> =
+                        FxHashMap::default();
+                    let mut dynamics = vec![];
+
+                    let mut current = start.as_str();
+                    for (n, (pattern_offset, instruction)) in
+                        map.instructions.iter().enumerate().cycle().enumerate()
+                    {
+                        all_nodes
+                            .entry((current, pattern_offset))
+                            .and_modify(|(index, looped, end)| {
+                                if !*looped {
+                                    if *end {
+                                        let first_occurrence = *index as i64;
+                                        let latest_occurrence = n as i64;
+                                        dynamics.push(LinearCongruence::new(
+                                            first_occurrence,
+                                            latest_occurrence - first_occurrence,
+                                            first_occurrence,
+                                        ));
+                                    }
+
+                                    *looped = true;
+                                }
+                            })
+                            .or_insert((n, false, end(current)));
+
+                        if all_nodes
+                            .values()
+                            .max_by_key(|(index, _, _)| *index)
+                            .is_some_and(|(_, looped, _)| *looped)
+                        {
+                            break;
+                        }
+
+                        let children = &map.graph[current];
+                        current = match instruction {
+                            Instruction::L => children.0.as_str(),
+                            Instruction::R => children.1.as_str(),
+                        };
+                    }
+
+                    let statics = all_nodes
+                        .values()
+                        .filter(|(_, looped, end)| *end && !*looped)
+                        .map(|(index, _, _)| *index as i64)
+                        .sorted()
+                        .collect();
+                    LoopInformation { statics, dynamics }
+                })
+                .collect(),
+        }
+    }
+
+    fn has_dynamic_solution(&self) -> bool {
+        !self.infos.is_empty() && self.infos.iter().all(LoopInformation::has_dynamic_solution)
+    }
+
+    fn is_solution(&self, n: &i64) -> bool {
+        !self.infos.is_empty() && self.infos.iter().all(|li| li.is_solution(n))
+    }
+
+    fn solve(&self) -> Option<i64> {
+        // first try the statics
+        if let Some(n) = self
+            .infos
+            .iter()
+            .flat_map(|li| li.statics.iter())
+            .find(|n| self.is_solution(n))
+        {
+            return Some(*n);
+        }
+
+        // then check the dynamics
+        if !self.has_dynamic_solution() {
+            return None;
+        }
+
+        fn solve_two_lc(a: &LinearCongruence, b: &LinearCongruence) -> Option<LinearCongruence> {
+            let (ExtendedGcd { gcd, x, .. }, lcm) = a.modulus.extended_gcd_lcm(&b.modulus);
+            if a.value.rem_euclid(gcd) != b.value.rem_euclid(gcd) {
+                None
+            } else {
+                Some(LinearCongruence::new(
+                    a.value - x * a.modulus * (a.value - b.value) / gcd,
+                    lcm,
+                    a.minimum.max(b.minimum),
+                ))
+            }
+        }
+
+        fn solve_lcs(lcs: &[&LinearCongruence]) -> Option<i64> {
+            let mut sol: LinearCongruence = *lcs[0];
+            for lc in &lcs[1..] {
+                if let Some(partial_sol) = solve_two_lc(&sol, lc) {
+                    sol = partial_sol;
+                } else {
+                    return None;
+                }
+            }
+
+            Some(sol.find_solution())
+        }
+
+        self.infos
+            .iter()
+            .map(|li| li.dynamics.iter())
+            .multi_cartesian_product()
+            .filter_map(|lcs| solve_lcs(&lcs))
+            .min()
+    }
+}
+
+#[derive(Debug)]
+struct LoopInformation {
+    statics: Vec<i64>,
+    dynamics: Vec<LinearCongruence>,
+}
+
+impl LoopInformation {
+    fn has_dynamic_solution(&self) -> bool {
+        !self.dynamics.is_empty()
+    }
+
+    fn is_solution(&self, n: &i64) -> bool {
+        self.statics.binary_search(n).is_ok() || self.dynamics.iter().any(|lc| lc.is_solution(n))
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+struct LinearCongruence {
+    value: i64,
+    modulus: i64,
+    minimum: i64,
+}
+
+impl LinearCongruence {
+    fn new(value: i64, modulus: i64, minimum: i64) -> Self {
+        assert!(minimum >= 0);
+        Self {
+            value: value.rem_euclid(modulus),
+            modulus,
+            minimum,
+        }
+    }
+
+    fn is_solution(&self, n: &i64) -> bool {
+        *n >= self.minimum && n.rem_euclid(self.modulus) == self.value
+    }
+
+    fn find_solution(&self) -> i64 {
+        // TODO: optimize and safeguard against overflow
+        let mut n = self.minimum / self.modulus;
+        loop {
+            let sol = n * self.modulus + self.value;
+            if sol >= self.minimum {
+                return sol;
+            }
+
+            n += 1;
+        }
+    }
+}
+
 #[aoc_generator(day8)]
 pub fn input_generator(input: &str) -> Map {
     input.parse().unwrap()
@@ -84,7 +263,7 @@ fn get_path_length(map: &Map, start: &str, end: impl Fn(&str) -> bool) -> usize 
         current = match instruction {
             Instruction::L => children.0.as_str(),
             Instruction::R => children.1.as_str(),
-        }
+        };
     }
 
     unreachable!();
@@ -106,6 +285,12 @@ pub fn part2(input: &Map) -> usize {
         .filter(|n| n.ends_with('A'))
         .map(|n| get_path_length(input, n, |n| n.ends_with('Z')))
         .fold(1, |a, e| a.lcm(&e))
+}
+
+#[aoc(day8, part2, general)]
+pub fn part2_general(input: &Map) -> i64 {
+    let lis = LoopInformationSystem::create(input, |n| n.ends_with('A'), |n| n.ends_with('Z'));
+    lis.solve().unwrap()
 }
 
 #[cfg(test)]
