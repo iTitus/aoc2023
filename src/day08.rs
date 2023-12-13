@@ -39,28 +39,22 @@ impl FromStr for Map {
             .trim()
             .chars()
             .map(Instruction::try_from)
-            .process_results(|it| it.collect())
-            .map_err(|_| ())?;
+            .collect::<Result<_, _>>()?;
         let graph = graph
             .trim()
             .lines()
             .map(|l| {
                 let (node, children) = l.split_once('=').ok_or(())?;
-                let (l, r) = children
-                    .trim()
-                    .strip_prefix('(')
-                    .ok_or(())?
-                    .strip_suffix(')')
-                    .ok_or(())?
-                    .split_once(',')
+                let node = node.trim().to_string();
+                let children = children
+                    .trim_matches(|c: char| c == '(' || c == ')' || c.is_whitespace())
+                    .split(',')
+                    .map(|s| s.trim().to_string())
+                    .collect_tuple()
                     .ok_or(())?;
-                return Ok((
-                    node.trim().to_string(),
-                    (l.trim().to_string(), r.trim().to_string()),
-                ));
+                Ok((node, children))
             })
-            .process_results(|it| it.collect())
-            .map_err(|_: ()| ())?;
+            .collect::<Result<_, _>>()?;
 
         Ok(Map {
             instructions,
@@ -82,40 +76,32 @@ impl LoopInformationSystem {
                 .keys()
                 .filter(|n| start(n.as_str()))
                 .map(|start| {
-                    // (node, pattern_offset) -> (index, looped, end)
-                    let mut all_nodes: FxHashMap<(&str, usize), (usize, bool, bool)> =
-                        FxHashMap::default();
-                    let mut dynamics = vec![];
-
+                    // (node, pattern_offset) -> index
+                    let mut all_nodes: FxHashMap<(&str, usize), usize> = FxHashMap::default();
                     let mut current = start.as_str();
-                    for (n, (pattern_offset, instruction)) in
+                    for (n, (instruction_offset, instruction)) in
                         map.instructions.iter().enumerate().cycle().enumerate()
                     {
-                        all_nodes
-                            .entry((current, pattern_offset))
-                            .and_modify(|(index, looped, end)| {
-                                if !*looped {
-                                    if *end {
-                                        let first_occurrence = *index as i64;
-                                        let latest_occurrence = n as i64;
-                                        dynamics.push(LinearCongruence::new(
-                                            first_occurrence,
-                                            latest_occurrence - first_occurrence,
-                                            first_occurrence,
-                                        ));
-                                    }
-
-                                    *looped = true;
-                                }
-                            })
-                            .or_insert((n, false, end(current)));
-
-                        if all_nodes
-                            .values()
-                            .max_by_key(|(index, _, _)| *index)
-                            .is_some_and(|(_, looped, _)| *looped)
-                        {
-                            break;
+                        if let Some(&loop_start) = all_nodes.get(&(current, instruction_offset)) {
+                            let statics = all_nodes
+                                .iter()
+                                .filter(|((node, _), index)| **index < loop_start && end(node))
+                                .map(|(_, index)| *index as i64)
+                                .sorted()
+                                .collect();
+                            let loop_length = (n - loop_start) as i64;
+                            let dynamics = all_nodes
+                                .iter()
+                                .filter(|((node, _), index)| **index >= loop_start && end(node))
+                                .map(|(_, index)| *index as i64)
+                                .collect();
+                            return LoopInformation {
+                                statics,
+                                loop_length,
+                                dynamics,
+                            };
+                        } else {
+                            all_nodes.insert((current, instruction_offset), n);
                         }
 
                         let children = &map.graph[current];
@@ -125,13 +111,7 @@ impl LoopInformationSystem {
                         };
                     }
 
-                    let statics = all_nodes
-                        .values()
-                        .filter(|(_, looped, end)| *end && !*looped)
-                        .map(|(index, _, _)| *index as i64)
-                        .sorted()
-                        .collect();
-                    LoopInformation { statics, dynamics }
+                    unreachable!();
                 })
                 .collect(),
         }
@@ -162,11 +142,14 @@ impl LoopInformationSystem {
         }
 
         fn solve_two_lc(a: &LinearCongruence, b: &LinearCongruence) -> Option<LinearCongruence> {
-            let (ExtendedGcd { gcd, x, .. }, lcm) = a.modulus.extended_gcd_lcm(&b.modulus);
+            // Chinese Remainder Theorem
+            let (ExtendedGcd { gcd, x, y: _y }, lcm) = a.modulus.extended_gcd_lcm(&b.modulus);
             if a.value.rem_euclid(gcd) != b.value.rem_euclid(gcd) {
                 None
             } else {
-                Some(LinearCongruence::new(
+                // alternatively:
+                // (a.value * _y * b.modulus + b.value * x * a.modulus) / gcd;
+                Some(LinearCongruence::new_with_minimum(
                     a.value - x * a.modulus * (a.value - b.value) / gcd,
                     lcm,
                     a.minimum.max(b.minimum),
@@ -174,22 +157,19 @@ impl LoopInformationSystem {
             }
         }
 
-        fn solve_lcs(lcs: &[&LinearCongruence]) -> Option<i64> {
-            let mut sol: LinearCongruence = *lcs[0];
-            for lc in &lcs[1..] {
-                if let Some(partial_sol) = solve_two_lc(&sol, lc) {
-                    sol = partial_sol;
-                } else {
-                    return None;
-                }
-            }
-
-            Some(sol.find_solution())
+        fn solve_lcs(lcs: &[LinearCongruence]) -> Option<i64> {
+            lcs.iter()
+                .try_fold(LinearCongruence::default(), |acc, x| solve_two_lc(&acc, x))
+                .map(|lc| lc.find_solution())
         }
 
         self.infos
             .iter()
-            .map(|li| li.dynamics.iter())
+            .map(|li| {
+                li.dynamics
+                    .iter()
+                    .map(|n| LinearCongruence::new(*n, li.loop_length))
+            })
             .multi_cartesian_product()
             .filter_map(|lcs| solve_lcs(&lcs))
             .min()
@@ -199,7 +179,8 @@ impl LoopInformationSystem {
 #[derive(Debug)]
 struct LoopInformation {
     statics: Vec<i64>,
-    dynamics: Vec<LinearCongruence>,
+    loop_length: i64,
+    dynamics: Vec<i64>,
 }
 
 impl LoopInformation {
@@ -208,7 +189,12 @@ impl LoopInformation {
     }
 
     fn is_solution(&self, n: &i64) -> bool {
-        self.statics.binary_search(n).is_ok() || self.dynamics.iter().any(|lc| lc.is_solution(n))
+        self.statics.binary_search(n).is_ok()
+            || self
+                .dynamics
+                .iter()
+                .map(|v| LinearCongruence::new(*v, self.loop_length))
+                .any(|lc| lc.is_solution(n))
     }
 }
 
@@ -219,8 +205,18 @@ struct LinearCongruence {
     minimum: i64,
 }
 
+impl Default for LinearCongruence {
+    fn default() -> Self {
+        Self::new(0, 1)
+    }
+}
+
 impl LinearCongruence {
-    fn new(value: i64, modulus: i64, minimum: i64) -> Self {
+    fn new(value: i64, modulus: i64) -> Self {
+        Self::new_with_minimum(value, modulus, value)
+    }
+    fn new_with_minimum(value: i64, modulus: i64, minimum: i64) -> Self {
+        assert!(modulus >= 1);
         assert!(minimum >= 0);
         Self {
             value: value.rem_euclid(modulus),
@@ -234,10 +230,14 @@ impl LinearCongruence {
     }
 
     fn find_solution(&self) -> i64 {
-        // TODO: optimize and safeguard against overflow
         let mut n = self.minimum / self.modulus;
         loop {
-            let sol = n * self.modulus + self.value;
+            let sol = self
+                .modulus
+                .checked_mul(n)
+                .unwrap()
+                .checked_add(self.value)
+                .unwrap();
             if sol >= self.minimum {
                 return sol;
             }
@@ -252,43 +252,14 @@ pub fn input_generator(input: &str) -> Map {
     input.parse().unwrap()
 }
 
-fn get_path_length(map: &Map, start: &str, end: impl Fn(&str) -> bool) -> usize {
-    let mut current = start;
-    for (n, instruction) in map.instructions.iter().cycle().enumerate() {
-        if end(current) {
-            return n;
-        }
-
-        let children = &map.graph[current];
-        current = match instruction {
-            Instruction::L => children.0.as_str(),
-            Instruction::R => children.1.as_str(),
-        };
-    }
-
-    unreachable!();
-}
-
 #[aoc(day8, part1)]
-pub fn part1(input: &Map) -> usize {
-    get_path_length(input, "AAA", |n| n == "ZZZ")
+pub fn part1(input: &Map) -> i64 {
+    let lis = LoopInformationSystem::create(input, |n| n == "AAA", |n| n == "ZZZ");
+    lis.solve().unwrap()
 }
 
 #[aoc(day8, part2)]
-pub fn part2(input: &Map) -> usize {
-    // assume all start positions end up in a loop of constant length N around a "__Z" node after exactly N steps
-    // assume that all the loop lengths work out with the instruction count
-    // this is undocumented but should hold for all inputs
-    input
-        .graph
-        .keys()
-        .filter(|n| n.ends_with('A'))
-        .map(|n| get_path_length(input, n, |n| n.ends_with('Z')))
-        .fold(1, |a, e| a.lcm(&e))
-}
-
-#[aoc(day8, part2, general)]
-pub fn part2_general(input: &Map) -> i64 {
+pub fn part2(input: &Map) -> i64 {
     let lis = LoopInformationSystem::create(input, |n| n.ends_with('A'), |n| n.ends_with('Z'));
     lis.solve().unwrap()
 }
