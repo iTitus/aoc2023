@@ -201,6 +201,7 @@ KK677 28
 KTJJT 220
 QQQJA 483"#;
 
+    /// https://www.reddit.com/r/adventofcode/comments/18cr4xr/2023_day_7_better_example_input_not_a_spoiler/
     const INPUT_2: &str = r#"2345A 1
 Q2KJJ 13
 Q2Q2Q 19

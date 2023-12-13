@@ -109,6 +109,8 @@ mod tests {
 .......#..
 #...#....."#;
 
+    const INPUT_2: &str = include_str!("../alternative_inputs/day11.txt");
+
     #[test]
     fn test_part1() {
         assert_eq!(part1(&input_generator(INPUT)), 374)
@@ -118,5 +120,15 @@ mod tests {
     fn test_part2_partial() {
         let input = input_generator(INPUT);
         assert_eq!(distances(&input.galaxies, 100), 8410)
+    }
+
+    #[test]
+    fn test_part1_2() {
+        assert_eq!(part1(&input_generator(INPUT_2)), 2466269413)
+    }
+
+    #[test]
+    fn test_part2_2() {
+        assert_eq!(part2(&input_generator(INPUT_2)), 155354715564293)
     }
 }

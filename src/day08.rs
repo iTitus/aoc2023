@@ -83,6 +83,8 @@ impl LoopInformationSystem {
                         map.instructions.iter().enumerate().cycle().enumerate()
                     {
                         if let Some(&loop_start) = all_nodes.get(&(current, instruction_offset)) {
+                            // possible optimization: use symmetries in instructions & graph to reduce the cycle length
+                            // for that we need to find the shortest subcycle by just looking at the nodes, not the instruction offset
                             let statics = all_nodes
                                 .iter()
                                 .filter(|((node, _), index)| **index < loop_start && end(node))
@@ -297,6 +299,20 @@ ZZZ = (ZZZ, ZZZ)"#;
 22Z = (22B, 22B)
 XXX = (XXX, XXX)"#;
 
+    /// https://www.reddit.com/r/adventofcode/comments/18gx9la/2023_day_8_part_2_pathological_inputs_spoilers/
+    const INPUT_4: &str = r#"LLLLLR
+
+11A = (11B, 11C)
+11B = (11C, 11C)
+11C = (11Z, 11Z)
+11Z = (11E, 11E)
+11E = (11F, 11F)
+11F = (11B, 11B)
+22A = (22B, 22Z)
+22B = (22Z, 22D)
+22Z = (22A, 22A)
+22D = (22D, 22D)"#;
+
     #[test]
     fn test_part1() {
         assert_eq!(part1(&input_generator(INPUT)), 2)
@@ -310,5 +326,10 @@ XXX = (XXX, XXX)"#;
     #[test]
     fn test_part2() {
         assert_eq!(part2(&input_generator(INPUT_3)), 6)
+    }
+
+    #[test]
+    fn test_part2_2() {
+        assert_eq!(part2(&input_generator(INPUT_4)), 8)
     }
 }
