@@ -76,7 +76,7 @@ impl LoopInformationSystem {
                 .keys()
                 .filter(|n| start(n.as_str()))
                 .map(|start| {
-                    // (node, pattern_offset) -> index
+                    // (node, instruction_offset) -> index
                     let mut all_nodes: FxHashMap<(&str, usize), usize> = FxHashMap::default();
                     let mut current = start.as_str();
                     for (n, (instruction_offset, instruction)) in
