@@ -217,9 +217,10 @@ impl LinearCongruence {
     fn new(value: i64, modulus: i64) -> Self {
         Self::new_with_minimum(value, modulus, value)
     }
+
     fn new_with_minimum(value: i64, modulus: i64, minimum: i64) -> Self {
-        assert!(modulus >= 1);
-        assert!(minimum >= 0);
+        debug_assert!(modulus >= 1);
+        debug_assert!(minimum >= 0);
         Self {
             value: value.rem_euclid(modulus),
             modulus,
@@ -315,21 +316,21 @@ XXX = (XXX, XXX)"#;
 
     #[test]
     fn test_part1() {
-        assert_eq!(part1(&input_generator(INPUT)), 2)
+        assert_eq!(part1(&input_generator(INPUT)), 2);
     }
 
     #[test]
     fn test_part1_2() {
-        assert_eq!(part1(&input_generator(INPUT_2)), 6)
+        assert_eq!(part1(&input_generator(INPUT_2)), 6);
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(part2(&input_generator(INPUT_3)), 6)
+        assert_eq!(part2(&input_generator(INPUT_3)), 6);
     }
 
     #[test]
     fn test_part2_2() {
-        assert_eq!(part2(&input_generator(INPUT_4)), 8)
+        assert_eq!(part2(&input_generator(INPUT_4)), 8);
     }
 }

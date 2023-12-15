@@ -224,21 +224,21 @@ JJJJ2 41"#;
 
     #[test]
     fn test_part1() {
-        assert_eq!(part1(&input_generator(INPUT)), 6440)
+        assert_eq!(part1(&input_generator(INPUT)), 6440);
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(part2(&input_generator(INPUT)), 5905)
+        assert_eq!(part2(&input_generator(INPUT)), 5905);
     }
 
     #[test]
     fn test_part1_2() {
-        assert_eq!(part1(&input_generator(INPUT_2)), 6592)
+        assert_eq!(part1(&input_generator(INPUT_2)), 6592);
     }
 
     #[test]
     fn test_part2_2() {
-        assert_eq!(part2(&input_generator(INPUT_2)), 6839)
+        assert_eq!(part2(&input_generator(INPUT_2)), 6839);
     }
 }

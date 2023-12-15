@@ -173,16 +173,16 @@ mod tests {
 
     #[test]
     fn test_part1_1() {
-        assert_eq!(part1(&input_generator(INPUT_1)), 6)
+        assert_eq!(part1(&input_generator(INPUT_1)), 6);
     }
 
     #[test]
     fn test_part1_2() {
-        assert_eq!(part1(&input_generator(INPUT_2)), 21)
+        assert_eq!(part1(&input_generator(INPUT_2)), 21);
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(part2(&input_generator(INPUT_2)), 525152)
+        assert_eq!(part2(&input_generator(INPUT_2)), 525152);
     }
 }

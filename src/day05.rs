@@ -238,11 +238,11 @@ humidity-to-location map:
 
     #[test]
     fn test_part1() {
-        assert_eq!(part1(&input_generator(INPUT)), 35)
+        assert_eq!(part1(&input_generator(INPUT)), 35);
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(part2(&input_generator(INPUT)), 46)
+        assert_eq!(part2(&input_generator(INPUT)), 46);
     }
 }

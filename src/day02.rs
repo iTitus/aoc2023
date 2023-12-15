@@ -109,11 +109,11 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"#;
 
     #[test]
     fn test_part1() {
-        assert_eq!(part1(&input_generator(INPUT)), 8)
+        assert_eq!(part1(&input_generator(INPUT)), 8);
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(part2(&input_generator(INPUT)), 2286)
+        assert_eq!(part2(&input_generator(INPUT)), 2286);
     }
 }

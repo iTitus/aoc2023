@@ -85,11 +85,11 @@ Distance:  9  40  200"#;
 
     #[test]
     fn test_part1() {
-        assert_eq!(part1(&input_generator(INPUT)), 288)
+        assert_eq!(part1(&input_generator(INPUT)), 288);
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(part2(&input_generator(INPUT)), 71503)
+        assert_eq!(part2(&input_generator(INPUT)), 71503);
     }
 }

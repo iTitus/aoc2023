@@ -95,11 +95,11 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11"#;
 
     #[test]
     fn test_part1() {
-        assert_eq!(part1(&input_generator(INPUT)), 13)
+        assert_eq!(part1(&input_generator(INPUT)), 13);
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(part2(&input_generator(INPUT)), 30)
+        assert_eq!(part2(&input_generator(INPUT)), 30);
     }
 }

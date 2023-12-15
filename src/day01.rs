@@ -94,7 +94,7 @@ pqr3stu8vwx
 a1b2c3d4e5f
 treb7uchet"#;
 
-        assert_eq!(part1(&input_generator_1(INPUT)), 142)
+        assert_eq!(part1(&input_generator_1(INPUT)), 142);
     }
 
     #[test]
@@ -107,6 +107,6 @@ xtwone3four
 zoneight234
 7pqrstsixteen"#;
 
-        assert_eq!(part2(&input_generator_2(INPUT)), 281)
+        assert_eq!(part2(&input_generator_2(INPUT)), 281);
     }
 }

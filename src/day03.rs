@@ -131,11 +131,11 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        assert_eq!(part1(&input_generator(INPUT)), 4361)
+        assert_eq!(part1(&input_generator(INPUT)), 4361);
     }
 
     #[test]
     fn test_part2() {
-        assert_eq!(part2(&input_generator(INPUT)), 467835)
+        assert_eq!(part2(&input_generator(INPUT)), 467835);
     }
 }

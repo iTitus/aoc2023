@@ -191,7 +191,7 @@ impl IndexMut<Vec2i> for Pipes {
 impl Pipes {
     fn replace_start(&mut self) {
         let start = self.start;
-        assert_eq!(self[start], Pipe::Start);
+        debug_assert_eq!(self[start], Pipe::Start);
         let dirs: (Direction, Direction) = DIR
             .iter()
             .filter(|dir| self[dir.offset(&start)].is_open(&dir.opposite()))
@@ -357,51 +357,51 @@ L7JLJL-JLJLJL--JLJ.L"#;
 
     #[test]
     fn test_part1_1() {
-        assert_eq!(part1(&input_generator(INPUT_1)), 4)
+        assert_eq!(part1(&input_generator(INPUT_1)), 4);
     }
 
     #[test]
     fn test_part1_2() {
-        assert_eq!(part1(&input_generator(INPUT_2)), 4)
+        assert_eq!(part1(&input_generator(INPUT_2)), 4);
     }
 
     #[test]
     fn test_part1_3() {
-        assert_eq!(part1(&input_generator(INPUT_3)), 8)
+        assert_eq!(part1(&input_generator(INPUT_3)), 8);
     }
 
     #[test]
     fn test_part1_4() {
-        assert_eq!(part1(&input_generator(INPUT_4)), 8)
+        assert_eq!(part1(&input_generator(INPUT_4)), 8);
     }
 
     #[test]
     fn test_part2_1() {
-        assert_eq!(part2(&input_generator(INPUT_5)), 4)
+        assert_eq!(part2(&input_generator(INPUT_5)), 4);
     }
 
     #[test]
     fn test_part2_2() {
-        assert_eq!(part2(&input_generator(INPUT_6)), 8)
+        assert_eq!(part2(&input_generator(INPUT_6)), 8);
     }
 
     #[test]
     fn test_part2_3() {
-        assert_eq!(part2(&input_generator(INPUT_7)), 10)
+        assert_eq!(part2(&input_generator(INPUT_7)), 10);
     }
 
     #[test]
     fn test_part2_pt_1() {
-        assert_eq!(part2_pt(&input_generator(INPUT_5)), 4)
+        assert_eq!(part2_pt(&input_generator(INPUT_5)), 4);
     }
 
     #[test]
     fn test_part2_pt_2() {
-        assert_eq!(part2_pt(&input_generator(INPUT_6)), 8)
+        assert_eq!(part2_pt(&input_generator(INPUT_6)), 8);
     }
 
     #[test]
     fn test_part2_pt_3() {
-        assert_eq!(part2_pt(&input_generator(INPUT_7)), 10)
+        assert_eq!(part2_pt(&input_generator(INPUT_7)), 10);
     }
 }
