@@ -1,5 +1,5 @@
 use std::fmt::Debug;
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 use std::ops::{Index, IndexMut};
 use std::str::FromStr;
 
@@ -46,36 +46,11 @@ impl Direction {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Grid<T> {
     pub size_x: usize,
     pub size_y: usize,
     grid: Vec<T>,
-}
-
-impl<T: Clone> Clone for Grid<T> {
-    fn clone(&self) -> Self {
-        Self {
-            size_x: self.size_x,
-            size_y: self.size_y,
-            grid: self.grid.clone(),
-        }
-    }
-}
-
-impl<T: PartialEq> PartialEq for Grid<T> {
-    fn eq(&self, other: &Self) -> bool {
-        self.size_x == other.size_x && self.size_y == other.size_y && self.grid == other.grid
-    }
-}
-
-impl<T: Eq> Eq for Grid<T> {}
-
-impl<T: Hash> Hash for Grid<T> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.size_x.hash(state);
-        self.size_y.hash(state);
-        self.grid.hash(state);
-    }
 }
 
 impl<T: TryFrom<char>> FromStr for Grid<T> {
