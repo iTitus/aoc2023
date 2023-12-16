@@ -1,10 +1,8 @@
 use std::str::FromStr;
 
+use crate::common::Vec2i;
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
-use nalgebra::Vector2;
-
-pub type Vec2i = Vector2<i64>;
 
 #[derive(Debug)]
 pub struct Universe {
@@ -20,7 +18,7 @@ impl FromStr for Universe {
             .enumerate()
             .flat_map(|(y, l)| {
                 l.chars().enumerate().filter_map(move |(x, c)| match c {
-                    '#' => Some(Vec2i::new(x as i64, y as i64)),
+                    '#' => Some(Vec2i::new(x as _, y as _)),
                     _ => None,
                 })
             })

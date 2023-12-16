@@ -1,16 +1,8 @@
 use std::collections::HashMap;
-use std::str::FromStr;
 
+use crate::common::{Direction, Grid, Vec2i};
 use aoc_runner_derive::{aoc, aoc_generator};
 use rustc_hash::FxHashMap;
-
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-enum Direction {
-    North,
-    East,
-    South,
-    West,
-}
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum Tile {
@@ -34,106 +26,74 @@ impl TryFrom<char> for Tile {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Platform {
-    grid: Vec<Vec<Tile>>,
+trait Platform {
+    fn tilt(&self, dir: Direction) -> Self;
+
+    fn cycle(&self, n: usize) -> Self;
+
+    fn total_load(&self) -> usize;
 }
 
-impl FromStr for Platform {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Platform {
-            grid: s
-                .trim()
-                .lines()
-                .map(|l| l.chars().map(Tile::try_from).collect::<Result<_, _>>())
-                .collect::<Result<_, _>>()?,
-        })
-    }
-}
-
-impl Platform {
-    fn size_x(&self) -> usize {
-        self.grid[0].len()
-    }
-
-    fn size_y(&self) -> usize {
-        self.grid.len()
-    }
-
-    fn tilt(&self, dir: Direction) -> Platform {
-        let sx = self.size_x();
-        let sy = self.size_y();
-        let mut grid: Vec<Vec<Tile>> = self.grid.clone();
-        let mut swap = |x, y, dx, dy| {
-            let row: &Vec<Tile> = &grid[y];
-            if row[x] == Tile::Rock {
-                let mut target_x = x;
-                let mut target_y = y;
+impl Platform for Grid<Tile> {
+    fn tilt(&self, dir: Direction) -> Grid<Tile> {
+        let mut grid = self.clone();
+        let mut swap = |pos: Vec2i, dir: Direction| {
+            if grid[pos] == Tile::Rock {
+                let mut target = pos;
                 loop {
-                    let nx = target_x as isize + dx;
-                    let ny = target_y as isize + dy;
-                    if nx < 0 || (nx as usize) >= sx || ny < 0 || (ny as usize) >= sy {
+                    let new_target = dir.offset(&target);
+                    if !grid.in_bounds(&new_target) || grid[new_target] != Tile::Empty {
                         break;
                     }
 
-                    let drow: &Vec<Tile> = &grid[ny as usize];
-                    if drow[nx as usize] != Tile::Empty {
-                        break;
-                    }
-
-                    target_x = nx as usize;
-                    target_y = ny as usize;
+                    target = new_target;
                 }
 
-                if target_x != x || target_y != y {
-                    let row: &mut Vec<Tile> = &mut grid[y];
-                    row[x] = Tile::Empty;
-                    let drow: &mut Vec<Tile> = &mut grid[target_y];
-                    drow[target_x] = Tile::Rock;
+                if target != pos {
+                    grid[pos] = Tile::Empty;
+                    grid[target] = Tile::Rock;
                 }
             }
         };
 
         match dir {
             Direction::North => {
-                for y in 1..sy {
-                    for x in 0..sx {
-                        swap(x, y, 0, -1);
+                for y in 1..self.size_y {
+                    for x in 0..self.size_x {
+                        swap(Vec2i::new(x as _, y as _), dir);
                     }
                 }
             }
             Direction::East => {
-                for x in (0..sx - 1).rev() {
-                    for y in 0..sy {
-                        swap(x, y, 1, 0);
+                for x in (0..self.size_x - 1).rev() {
+                    for y in 0..self.size_y {
+                        swap(Vec2i::new(x as _, y as _), dir);
                     }
                 }
             }
             Direction::South => {
-                for y in (0..sy - 1).rev() {
-                    for x in 0..sx {
-                        swap(x, y, 0, 1);
+                for y in (0..self.size_y - 1).rev() {
+                    for x in 0..self.size_x {
+                        swap(Vec2i::new(x as _, y as _), dir);
                     }
                 }
             }
             Direction::West => {
-                for x in 1..sx {
-                    for y in 0..sy {
-                        swap(x, y, -1, 0);
+                for x in 1..self.size_x {
+                    for y in 0..self.size_y {
+                        swap(Vec2i::new(x as _, y as _), dir);
                     }
                 }
             }
         };
 
-        Platform { grid }
+        grid
     }
 
-    fn cycle(&self, n: usize) -> Platform {
+    fn cycle(&self, n: usize) -> Grid<Tile> {
         let mut current = self.clone();
 
-        let mut cache: FxHashMap<Platform, usize> = HashMap::default();
+        let mut cache: FxHashMap<Grid<Tile>, usize> = HashMap::default();
         let mut i = 0;
         loop {
             if i == n {
@@ -160,30 +120,30 @@ impl Platform {
     }
 
     fn total_load(&self) -> usize {
-        let sy = self.size_y();
-        self.grid
-            .iter()
-            .enumerate()
-            .map(|(y, row)| {
-                let load = sy - y;
-                load * row.iter().filter(|t| **t == Tile::Rock).count()
+        self.pos_iter()
+            .map(|(pos, t)| {
+                if *t == Tile::Rock {
+                    self.size_y - pos.y as usize
+                } else {
+                    0
+                }
             })
             .sum()
     }
 }
 
 #[aoc_generator(day14)]
-pub fn input_generator(input: &str) -> Platform {
+pub fn input_generator(input: &str) -> Grid<Tile> {
     input.parse().unwrap()
 }
 
 #[aoc(day14, part1)]
-pub fn part1(input: &Platform) -> usize {
+pub fn part1(input: &Grid<Tile>) -> usize {
     input.tilt(Direction::North).total_load()
 }
 
 #[aoc(day14, part2)]
-pub fn part2(input: &Platform) -> usize {
+pub fn part2(input: &Grid<Tile>) -> usize {
     input.cycle(1_000_000_000).total_load()
 }
 

@@ -1,56 +1,8 @@
-use std::ops::{Index, IndexMut};
-use std::str::FromStr;
-
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
-use nalgebra::Vector2;
 use rustc_hash::FxHashSet;
 
-pub type Vec2i = Vector2<i32>;
-
-const NORTH: Vec2i = Vec2i::new(0, -1);
-const SOUTH: Vec2i = Vec2i::new(0, 1);
-const EAST: Vec2i = Vec2i::new(1, 0);
-const WEST: Vec2i = Vec2i::new(-1, 0);
-
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-enum Direction {
-    North,
-    South,
-    East,
-    West,
-}
-
-const DIR: [Direction; 4] = [
-    Direction::North,
-    Direction::East,
-    Direction::South,
-    Direction::West,
-];
-
-impl Direction {
-    fn opposite(&self) -> Direction {
-        match self {
-            Direction::North => Direction::South,
-            Direction::South => Direction::North,
-            Direction::East => Direction::West,
-            Direction::West => Direction::East,
-        }
-    }
-
-    fn vec(&self) -> Vec2i {
-        match self {
-            Direction::North => NORTH,
-            Direction::South => SOUTH,
-            Direction::East => EAST,
-            Direction::West => WEST,
-        }
-    }
-
-    fn offset(&self, pos: &Vec2i) -> Vec2i {
-        pos + self.vec()
-    }
-}
+use crate::common::{Direction, Grid, Vec2i};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Pipe {
@@ -128,101 +80,50 @@ impl Pipe {
     }
 }
 
-#[derive(Debug)]
-pub struct Pipes {
-    size_x: i32,
-    size_y: i32,
-    start: Vec2i,
-    pipes: Vec<Vec<Pipe>>,
-}
-
-impl FromStr for Pipes {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let pipes = s
-            .lines()
-            .map(|l| l.chars().map(TryInto::try_into).collect())
-            .collect::<Result<Vec<Vec<_>>, _>>()?;
-
-        let start = pipes
-            .iter()
-            .enumerate()
-            .find_map(|(y, l)| {
-                l.iter()
-                    .position(|p| *p == Pipe::Start)
-                    .map(|x| Vec2i::new(x as i32, y as i32))
-            })
-            .ok_or(())?;
-
-        let mut pipes = Pipes {
-            size_x: pipes[0].len() as i32,
-            size_y: pipes.len() as i32,
-            start,
-            pipes,
-        };
-        pipes.replace_start();
-        Ok(pipes)
-    }
-}
-
-impl Index<Vec2i> for Pipes {
-    type Output = Pipe;
-
-    fn index(&self, index: Vec2i) -> &Self::Output {
-        if (0..self.size_x).contains(&index.x) && (0..self.size_y).contains(&index.y) {
-            &self.pipes[index.y as usize][index.x as usize]
-        } else {
-            &Pipe::Ground
-        }
-    }
-}
-
-impl IndexMut<Vec2i> for Pipes {
-    fn index_mut(&mut self, index: Vec2i) -> &mut Self::Output {
-        if (0..self.size_x).contains(&index.x) && (0..self.size_y).contains(&index.y) {
-            &mut self.pipes[index.y as usize][index.x as usize]
-        } else {
-            panic!("out of bounds");
-        }
-    }
-}
-
-impl Pipes {
-    fn replace_start(&mut self) {
-        let start = self.start;
-        debug_assert_eq!(self[start], Pipe::Start);
-        let dirs: (Direction, Direction) = DIR
-            .iter()
-            .filter(|dir| self[dir.offset(&start)].is_open(&dir.opposite()))
-            .copied()
-            .collect_tuple()
-            .unwrap();
-        let replacement = Pipe::try_from(dirs).unwrap();
-        self[start] = replacement;
-    }
+fn replace_start(pipes: &mut Grid<Pipe>) -> Vec2i {
+    let start = pipes
+        .pos_iter()
+        .find(|(_, pipe)| **pipe == Pipe::Start)
+        .unwrap()
+        .0;
+    let dirs: (Direction, Direction) = Direction::VALUES
+        .iter()
+        .filter(|dir| {
+            let offset_pos = dir.offset(&start);
+            pipes.in_bounds(&offset_pos) && pipes[offset_pos].is_open(&dir.opposite())
+        })
+        .copied()
+        .collect_tuple()
+        .unwrap();
+    pipes[start] = Pipe::try_from(dirs).unwrap();
+    start
 }
 
 #[aoc_generator(day10)]
-pub fn input_generator(input: &str) -> Pipes {
-    input.parse().unwrap()
+pub fn input_generator(input: &str) -> (Vec2i, Grid<Pipe>) {
+    let mut pipes = input.parse().unwrap();
+    let start = replace_start(&mut pipes);
+    (start, pipes)
 }
 
-fn find_cycle(pipes: &Pipes) -> Vec<Vec2i> {
-    let mut cycle = vec![pipes.start];
+fn find_cycle(start: &Vec2i, pipes: &Grid<Pipe>) -> Vec<Vec2i> {
+    let mut cycle = vec![*start];
     let mut came_from = Direction::North;
     loop {
         let pos = *cycle.last().unwrap();
         let p = &pipes[pos];
-        let dir = DIR
+        let dir = Direction::VALUES
             .iter()
             .filter(|d| **d != came_from)
             .filter(|d| p.is_open(d))
-            .find(|d| pipes[d.offset(&pos)].is_open(&d.opposite()))
+            .find(|d| {
+                let offset_pos = d.offset(&pos);
+                pipes.in_bounds(&offset_pos) && pipes[offset_pos].is_open(&d.opposite())
+            })
             .unwrap();
 
         let target_pos = dir.offset(&pos);
-        if target_pos == pipes.start {
+        if target_pos == *start {
             break;
         }
 
@@ -234,19 +135,19 @@ fn find_cycle(pipes: &Pipes) -> Vec<Vec2i> {
 }
 
 #[aoc(day10, part1)]
-pub fn part1(input: &Pipes) -> usize {
-    find_cycle(input).len() / 2
+pub fn part1((start, pipes): &(Vec2i, Grid<Pipe>)) -> usize {
+    find_cycle(start, pipes).len() / 2
 }
 
 #[aoc(day10, part2, area_scan)]
-pub fn part2(pipes: &Pipes) -> usize {
-    let cycle: FxHashSet<_> = find_cycle(pipes).into_iter().collect();
+pub fn part2((start, pipes): &(Vec2i, Grid<Pipe>)) -> usize {
+    let cycle: FxHashSet<_> = find_cycle(start, pipes).into_iter().collect();
     let mut inside_cycle_count = 0;
     for y in 0..pipes.size_y {
         let mut inside_cycle = false;
         let mut cycle_opener = None;
         for x in 0..pipes.size_x {
-            let pos = Vec2i::new(x, y);
+            let pos = Vec2i::new(x as _, y as _);
             if cycle.contains(&pos) {
                 match pipes[pos] {
                     Pipe::Horizontal => {}
@@ -280,14 +181,14 @@ pub fn part2(pipes: &Pipes) -> usize {
 }
 
 #[aoc(day10, part2, picks_theorem)]
-pub fn part2_pt(pipes: &Pipes) -> usize {
-    let cycle = find_cycle(pipes);
+pub fn part2_pt((start, pipes): &(Vec2i, Grid<Pipe>)) -> usize {
+    let cycle = find_cycle(start, pipes);
     // shoelace formula to find the area of the cycle
     let double_area = cycle
         .iter()
         .circular_tuple_windows()
         .map(|(vp, v, vn)| v.x * (vn.y - vp.y))
-        .sum::<i32>()
+        .sum::<i64>()
         .unsigned_abs() as usize;
     // pick's theorem to find the number of integer coordinates inside the cycle
     (double_area + 2 - cycle.len()) / 2
