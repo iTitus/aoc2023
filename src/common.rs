@@ -53,8 +53,11 @@ pub struct Grid<T> {
     grid: Vec<T>,
 }
 
-impl<T: TryFrom<char>> FromStr for Grid<T> {
-    type Err = <T as TryFrom<char>>::Error;
+impl<T> FromStr for Grid<T>
+where
+    char: TryInto<T>,
+{
+    type Err = <char as TryInto<T>>::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut size_x = None;
@@ -72,7 +75,7 @@ impl<T: TryFrom<char>> FromStr for Grid<T> {
                         panic!("non rectangular grid");
                     }
                 }
-                l.chars().map(T::try_from)
+                l.chars().map(char::try_into)
             })
             .collect::<Result<_, _>>()?;
         Ok(Grid {
