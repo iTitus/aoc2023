@@ -15,6 +15,22 @@ pub enum Direction {
     West,
 }
 
+impl TryFrom<char> for Direction {
+    type Error = ();
+
+    fn try_from(value: char) -> Result<Self, Self::Error> {
+        Ok(match value {
+            'N' | 'U' => Self::North,
+            'S' | 'D' => Self::South,
+            'E' | 'R' => Self::East,
+            'W' | 'L' => Self::West,
+            _ => {
+                return Err(());
+            }
+        })
+    }
+}
+
 impl Direction {
     pub const VALUES: [Direction; 4] = [
         Direction::North,
@@ -42,7 +58,11 @@ impl Direction {
     }
 
     pub fn offset(&self, pos: &Vec2i) -> Vec2i {
-        pos + self.vec()
+        self.offset_with_amount(pos, 1)
+    }
+
+    pub fn offset_with_amount(&self, pos: &Vec2i, amount: i64) -> Vec2i {
+        pos + amount * self.vec()
     }
 }
 
