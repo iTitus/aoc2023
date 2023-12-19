@@ -331,7 +331,7 @@ pub fn part2((workflows, _): &(Workflows, Vec<Part>)) -> i64 {
 
                     let n = condition.number;
                     let min = a_var.0;
-                    let max = a_var.1 + 1;
+                    let max = min.max(a_var.1 - 1);
                     match condition.operation {
                         ConditionOperation::LessThan => {
                             a_var.1 = n.clamp(min, max);
