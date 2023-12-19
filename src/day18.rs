@@ -24,7 +24,7 @@ impl FromStr for DigEntry {
                 color.trim_matches(|c| c == '(' || c == '#' || c == ')'),
                 16,
             )
-                .map_err(|_| ())?,
+            .map_err(|_| ())?,
         })
     }
 }
