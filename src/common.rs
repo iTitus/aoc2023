@@ -111,6 +111,12 @@ impl<T> Grid<T> {
         pos.x >= 0 && (pos.x as usize) < self.size_x && pos.y >= 0 && (pos.y as usize) < self.size_y
     }
 
+    pub fn mod_get(&self, pos: &Vec2i) -> &T {
+        let x = pos.x.rem_euclid(self.size_x as i64);
+        let y = pos.y.rem_euclid(self.size_y as i64);
+        &self[Vec2i::new(x, y)]
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.grid.iter()
     }
