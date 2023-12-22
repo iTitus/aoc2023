@@ -3,6 +3,8 @@ use std::str::FromStr;
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 
+use crate::common::parse_lines;
+
 #[derive(Debug, Default)]
 pub struct Draw {
     red: u32,
@@ -57,8 +59,8 @@ impl FromStr for Game {
             id: id.parse().map_err(|_| ())?,
             draws: draws
                 .split("; ")
-                .map(|draw| draw.parse())
-                .process_results(|it| it.collect())
+                .map(str::parse)
+                .collect::<Result<_, _>>()
                 .map_err(|_| ())?,
         })
     }
@@ -66,7 +68,7 @@ impl FromStr for Game {
 
 #[aoc_generator(day2)]
 pub fn input_generator(input: &str) -> Vec<Game> {
-    input.lines().map(|l| l.parse().unwrap()).collect()
+    parse_lines(input).unwrap()
 }
 
 #[aoc(day2, part1)]

@@ -1,6 +1,9 @@
+use std::str::FromStr;
+
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
-use std::str::FromStr;
+
+use crate::common::parse_lines;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub enum HandType {
@@ -122,8 +125,9 @@ impl FromStr for Hand {
         let cards = s
             .chars()
             .map(TryFrom::try_from)
-            .process_results(|it| it.collect_vec().try_into())
+            .collect::<Result<Vec<_>, _>>()
             .map_err(|_| ())?
+            .try_into()
             .map_err(|_| ())?;
         Ok(Hand { cards })
     }
@@ -165,7 +169,7 @@ impl FromStr for Bid {
 
 #[aoc_generator(day7)]
 pub fn input_generator(input: &str) -> Vec<Bid> {
-    input.lines().map(|l| l.parse().unwrap()).collect()
+    parse_lines(input).unwrap()
 }
 
 #[aoc(day7, part1)]

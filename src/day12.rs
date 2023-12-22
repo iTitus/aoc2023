@@ -4,6 +4,8 @@ use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use nalgebra::DMatrix;
 
+use crate::common::parse_lines;
+
 #[derive(Debug, Copy, Clone)]
 pub enum Spring {
     Dot,
@@ -74,11 +76,7 @@ impl Springs {
 
 #[aoc_generator(day12)]
 pub fn input_generator(input: &str) -> Vec<Springs> {
-    input
-        .lines()
-        .map(str::parse)
-        .collect::<Result<Vec<_>, _>>()
-        .unwrap()
+    parse_lines(input).unwrap()
 }
 
 fn count_alignments(springs: &Springs) -> usize {

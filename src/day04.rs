@@ -4,6 +4,8 @@ use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
 
+use crate::common::{parse_lines, parse_whitespace};
+
 #[derive(Debug)]
 pub struct Card {
     _id: u32,
@@ -28,23 +30,15 @@ impl FromStr for Card {
 
         Ok(Card {
             _id: id.trim().parse().map_err(|_| ())?,
-            winning_numbers: winning_numbers
-                .split_whitespace()
-                .map(|draw| draw.parse())
-                .process_results(|it| it.collect())
-                .map_err(|_| ())?,
-            my_numbers: my_numbers
-                .split_whitespace()
-                .map(|draw| draw.parse())
-                .process_results(|it| it.collect())
-                .map_err(|_| ())?,
+            winning_numbers: parse_whitespace(winning_numbers).map_err(|_| ())?,
+            my_numbers: parse_whitespace(my_numbers).map_err(|_| ())?,
         })
     }
 }
 
 #[aoc_generator(day4)]
 pub fn input_generator(input: &str) -> Vec<Card> {
-    input.lines().map(|l| l.parse().unwrap()).collect()
+    parse_lines(input).unwrap()
 }
 
 #[aoc(day4, part1)]

@@ -3,7 +3,7 @@ use std::str::FromStr;
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 
-use crate::common::{Direction, Vec2i};
+use crate::common::{parse_lines, Direction, Vec2i};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct DigEntry {
@@ -31,13 +31,7 @@ impl FromStr for DigEntry {
 
 #[aoc_generator(day18)]
 pub fn input_generator(input: &str) -> Vec<DigEntry> {
-    input
-        .lines()
-        .map(str::trim)
-        .filter(|l| !l.is_empty())
-        .map(str::parse)
-        .collect::<Result<_, _>>()
-        .unwrap()
+    parse_lines(input).unwrap()
 }
 
 fn find_area(entries: &[DigEntry], f: impl Fn(&DigEntry) -> (Direction, i64)) -> i64 {

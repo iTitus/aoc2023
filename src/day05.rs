@@ -20,12 +20,12 @@ impl FromStr for Almanac {
             .ok_or(())?
             .split_whitespace()
             .skip(1)
-            .map(|n| n.parse())
-            .process_results(|it| it.collect())
+            .map(str::parse)
+            .collect::<Result<_, _>>()
             .map_err(|_| ())?;
         let maps = split_it
-            .map(|m| m.parse())
-            .process_results(|it| it.collect())
+            .map(str::parse)
+            .collect::<Result<_, _>>()
             .map_err(|_| ())?;
 
         Ok(Almanac { initial, maps })
@@ -65,8 +65,8 @@ impl FromStr for Map {
             .trim()
             .lines()
             .skip(1)
-            .map(|l| l.parse())
-            .process_results(|it| it.collect())
+            .map(str::parse)
+            .collect::<Result<_, _>>()
             .map_err(|_| ())?;
 
         Ok(Map { entries })
@@ -139,7 +139,7 @@ impl FromStr for MapEntry {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (destination_start, source_start, range_length) = s
             .split_whitespace()
-            .map(|n| n.parse())
+            .map(str::parse)
             .process_results(|it| it.collect_tuple())
             .map_err(|_| ())?
             .ok_or(())?;

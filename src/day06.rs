@@ -12,8 +12,8 @@ pub fn input_generator(input: &str) -> Vec<Race> {
     fn parse_numbers(s: &str) -> Vec<u64> {
         s.split_whitespace()
             .skip(1)
-            .map(|n| n.parse())
-            .process_results(|it| it.collect())
+            .map(str::parse)
+            .collect::<Result<_, _>>()
             .unwrap()
     }
 

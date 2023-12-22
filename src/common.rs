@@ -4,8 +4,10 @@ use std::ops::{Index, IndexMut};
 use std::str::FromStr;
 
 use nalgebra::Vector2;
+use nalgebra::Vector3;
 
 pub type Vec2i = Vector2<i64>;
+pub type Vec3i = Vector3<i64>;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum Direction {
@@ -143,4 +145,18 @@ impl<T> IndexMut<Vec2i> for Grid<T> {
     fn index_mut(&mut self, index: Vec2i) -> &mut Self::Output {
         &mut self.grid[(index.x as usize) + self.size_x * (index.y as usize)]
     }
+}
+
+pub fn parse_whitespace<T: FromStr, B: FromIterator<T>>(s: &str) -> Result<B, <T as FromStr>::Err> {
+    s.split_whitespace()
+        .map(str::parse)
+        .collect::<Result<_, _>>()
+}
+
+pub fn parse_lines<T: FromStr, B: FromIterator<T>>(s: &str) -> Result<B, <T as FromStr>::Err> {
+    s.lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty())
+        .map(str::parse)
+        .collect::<Result<_, _>>()
 }

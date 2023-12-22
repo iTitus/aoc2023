@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use crate::common::parse_lines;
 use aoc_runner_derive::{aoc, aoc_generator};
 use rustc_hash::FxHashMap;
 
@@ -276,16 +277,7 @@ impl Part {
 #[aoc_generator(day19)]
 pub fn input_generator(input: &str) -> (Workflows, Vec<Part>) {
     let (workflows, parts) = input.split_once("\n\n").unwrap();
-    (
-        workflows.parse().unwrap(),
-        parts
-            .lines()
-            .map(str::trim)
-            .filter(|l| !l.is_empty())
-            .map(str::parse)
-            .collect::<Result<_, _>>()
-            .unwrap(),
-    )
+    (workflows.parse().unwrap(), parse_lines(parts).unwrap())
 }
 
 #[aoc(day19, part1)]

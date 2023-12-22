@@ -1,3 +1,4 @@
+use crate::common::parse_whitespace;
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 
@@ -5,12 +6,8 @@ use itertools::Itertools;
 pub fn input_generator(input: &str) -> Vec<Vec<i32>> {
     input
         .lines()
-        .map(|l| {
-            l.split_whitespace()
-                .map(|n| n.parse())
-                .process_results(|it| it.collect())
-        })
-        .process_results(|it| it.collect())
+        .map(parse_whitespace)
+        .collect::<Result<_, _>>()
         .unwrap()
 }
 
