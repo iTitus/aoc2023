@@ -53,6 +53,7 @@ dependencies = [
  "anyhow",
  "aoc-runner",
  "aoc-runner-derive",
+ "indexmap",
  "itertools",
  "lazy_static",
  "nalgebra",

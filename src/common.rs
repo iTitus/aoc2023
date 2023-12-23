@@ -123,12 +123,34 @@ impl<T> Grid<T> {
         self.grid.iter()
     }
 
+    pub fn iter_col(&self, x: i64) -> impl Iterator<Item = &T> {
+        (0..self.size_y).map(move |y| &self[Vec2i::new(x, y as i64)])
+    }
+
+    pub fn iter_row(&self, y: i64) -> impl Iterator<Item = &T> {
+        (0..self.size_x).map(move |x| &self[Vec2i::new(x as i64, y)])
+    }
+
     pub fn pos_iter(&self) -> impl Iterator<Item = (Vec2i, &T)> {
         self.grid.iter().enumerate().map(|(i, t)| {
             (
                 Vec2i::new((i % self.size_x) as _, (i / self.size_x) as _),
                 t,
             )
+        })
+    }
+
+    pub fn pos_iter_col(&self, x: i64) -> impl Iterator<Item = (Vec2i, &T)> {
+        (0..self.size_y).map(move |y| {
+            let pos = Vec2i::new(x, y as i64);
+            (pos, &self[pos])
+        })
+    }
+
+    pub fn pos_iter_row(&self, y: i64) -> impl Iterator<Item = (Vec2i, &T)> {
+        (0..self.size_x).map(move |x| {
+            let pos = Vec2i::new(x as i64, y);
+            (pos, &self[pos])
         })
     }
 }
