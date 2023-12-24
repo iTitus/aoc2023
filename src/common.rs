@@ -5,9 +5,15 @@ use std::str::FromStr;
 
 use nalgebra::Vector2;
 use nalgebra::Vector3;
+use num::rational::Ratio;
+use num::Rational64;
 
+pub type Rational128 = Ratio<i128>;
 pub type Vec2i = Vector2<i64>;
+pub type Vec2r = Vector2<Rational64>;
+pub type Vec2r128 = Vector2<Rational128>;
 pub type Vec3i = Vector3<i64>;
+pub type Vec3r = Vector3<Rational64>;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum Direction {
