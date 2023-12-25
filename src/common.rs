@@ -14,6 +14,7 @@ pub type Vec2r = Vector2<Rational64>;
 pub type Vec2r128 = Vector2<Rational128>;
 pub type Vec3i = Vector3<i64>;
 pub type Vec3r = Vector3<Rational64>;
+pub type Vec3r128 = Vector3<Rational128>;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum Direction {
