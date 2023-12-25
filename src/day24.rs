@@ -36,35 +36,6 @@ impl FromStr for Hailstone {
 }
 
 impl Hailstone {
-    fn intersect_x(&self, other: &Hailstone) -> LineIntersect3d {
-        intersect_xyz(
-            (
-                Vec3r128::new(
-                    Rational128::from_integer(self.pos.x as _),
-                    Rational128::zero(),
-                    Rational128::zero(),
-                ),
-                Vec3r128::new(
-                    Rational128::from_integer(self.vel.x as _),
-                    Rational128::zero(),
-                    Rational128::zero(),
-                ),
-            ),
-            (
-                Vec3r128::new(
-                    Rational128::from_integer(other.pos.x as _),
-                    Rational128::zero(),
-                    Rational128::zero(),
-                ),
-                Vec3r128::new(
-                    Rational128::from_integer(other.vel.x as _),
-                    Rational128::zero(),
-                    Rational128::zero(),
-                ),
-            ),
-        )
-    }
-
     fn intersect_xy(&self, other: &Hailstone) -> LineIntersect3d {
         intersect_xyz(
             (
@@ -335,7 +306,8 @@ fn brute_force(hailstones: &[Hailstone]) -> (Vec3r128, Vec3r128) {
 
     fn check_xy(hailstones: &[Hailstone], mut rock_vel: Vec3r128) -> Option<(Vec3r128, Vec3r128)> {
         if let Some(_xy_intersect) = intersect_all_xy(hailstones, rock_vel) {
-            for z in 0..=1000 { // just assume 1000, no guarantees
+            for z in 0..=1000 {
+                // just assume 1000, no guarantees
                 let z = Rational128::from_integer(z);
                 rock_vel.z = z;
                 if let Some(intersect) = intersect_all(hailstones, rock_vel) {
