@@ -3,10 +3,10 @@ use std::hash::Hash;
 use std::ops::{Index, IndexMut};
 use std::str::FromStr;
 
-use nalgebra::{Dim, Matrix, Scalar, Storage, Vector2};
 use nalgebra::Vector3;
-use num::{Rational64, Signed, Zero};
+use nalgebra::{Dim, Matrix, Scalar, Storage, Vector2};
 use num::rational::Ratio;
+use num::{Rational64, Signed};
 
 pub type Rational128 = Ratio<i128>;
 pub type Vec2i = Vector2<i64>;
