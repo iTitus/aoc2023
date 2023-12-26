@@ -242,7 +242,9 @@ pub fn parse_vec<T: Scalar + FromStr, const D: usize>(
     s: &str,
 ) -> Result<SVector<T, D>, ParseVecError<<T as FromStr>::Err>> {
     let mut it = s
-        .trim_matches(|c: char| matches!(c, '(' | ')' | '[' | ']' | '{' | '}' | '|') || c.is_whitespace())
+        .trim_matches(|c: char| {
+            matches!(c, '(' | ')' | '[' | ']' | '{' | '}' | '|') || c.is_whitespace()
+        })
         .split(|c: char| matches!(c, ',' | ';' | '|') || c.is_whitespace())
         .map(str::trim)
         .filter(|s| !s.is_empty())

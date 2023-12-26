@@ -2,9 +2,11 @@ use aoc_runner_derive::{aoc, aoc_generator};
 use regex::Regex;
 use rustc_hash::FxHashMap;
 
+use crate::common::parse_lines;
+
 #[aoc_generator(day3)]
 pub fn input_generator(input: &str) -> Vec<String> {
-    input.lines().map(|l| l.to_string()).collect()
+    parse_lines(input).unwrap()
 }
 
 #[aoc(day3, part1)]
