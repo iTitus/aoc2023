@@ -6,7 +6,7 @@ use itertools::Itertools;
 use nalgebra::SMatrix;
 use num::{One, Signed, Zero};
 
-use crate::common::{parse_lines, Rational128, Vec3i, Vec3r128};
+use crate::common::{parse_lines, parse_vec, Rational128, Vec3i, Vec3r128};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Hailstone {
@@ -18,19 +18,10 @@ impl FromStr for Hailstone {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        fn parse_vec3i(s: &str) -> Result<Vec3i, ()> {
-            let (x, y, z) = s.split(',').map(str::trim).collect_tuple().ok_or(())?;
-            Ok(Vec3i::new(
-                x.parse().map_err(|_| ())?,
-                y.parse().map_err(|_| ())?,
-                z.parse().map_err(|_| ())?,
-            ))
-        }
-
-        let (min, max) = s.split_once('@').ok_or(())?;
+        let (pos, vel) = s.split_once('@').ok_or(())?;
         Ok(Self {
-            pos: parse_vec3i(min)?,
-            vel: parse_vec3i(max)?,
+            pos: parse_vec(pos).map_err(|_| ())?,
+            vel: parse_vec(vel).map_err(|_| ())?,
         })
     }
 }
@@ -452,26 +443,26 @@ mod tests {
                     Vec3r128::new(
                         Rational128::from_integer(19),
                         Rational128::from_integer(13),
-                        Rational128::from_integer(30)
+                        Rational128::from_integer(30),
                     ),
                     Vec3r128::new(
                         Rational128::from_integer(-2),
                         Rational128::from_integer(1),
-                        Rational128::from_integer(-2)
+                        Rational128::from_integer(-2),
                     ),
                 ),
                 (
                     Vec3r128::new(
                         Rational128::from_integer(18),
                         Rational128::from_integer(19),
-                        Rational128::from_integer(22)
+                        Rational128::from_integer(22),
                     ),
                     Vec3r128::new(
                         Rational128::from_integer(-1),
                         Rational128::from_integer(-1),
-                        Rational128::from_integer(-2)
+                        Rational128::from_integer(-2),
                     )
-                )
+                ),
             ),
             LineIntersect3d::None
         );
@@ -481,26 +472,26 @@ mod tests {
                     Vec3r128::new(
                         Rational128::from_integer(19),
                         Rational128::from_integer(13),
-                        Rational128::from_integer(30)
+                        Rational128::from_integer(30),
                     ),
                     Vec3r128::new(
                         Rational128::from_integer(-2),
                         Rational128::from_integer(1),
-                        Rational128::from_integer(-2)
+                        Rational128::from_integer(-2),
                     ) - rock_vel,
                 ),
                 (
                     Vec3r128::new(
                         Rational128::from_integer(18),
                         Rational128::from_integer(19),
-                        Rational128::from_integer(22)
+                        Rational128::from_integer(22),
                     ),
                     Vec3r128::new(
                         Rational128::from_integer(-1),
                         Rational128::from_integer(-1),
-                        Rational128::from_integer(-2)
+                        Rational128::from_integer(-2),
                     ) - rock_vel
-                )
+                ),
             ),
             LineIntersect3d::Point(
                 Rational128::from_integer(5),
@@ -508,8 +499,8 @@ mod tests {
                 Vec3r128::new(
                     Rational128::from_integer(24),
                     Rational128::from_integer(13),
-                    Rational128::from_integer(10)
-                )
+                    Rational128::from_integer(10),
+                ),
             )
         );
     }

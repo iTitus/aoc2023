@@ -1,6 +1,7 @@
-use crate::common::{Direction, Grid, Vec2i};
 use aoc_runner_derive::{aoc, aoc_generator};
 use rustc_hash::FxHashSet;
+
+use crate::common::{Direction, Grid, Vec2i};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Tile {

@@ -3,10 +3,11 @@ use std::hash::Hash;
 use std::ops::{Index, IndexMut};
 use std::str::FromStr;
 
-use nalgebra::Vector3;
 use nalgebra::{Dim, Matrix, Scalar, Storage, Vector2};
+use nalgebra::{SVector, Vector3};
 use num::rational::Ratio;
 use num::{Rational64, Signed};
+use thiserror::Error;
 
 pub type Rational128 = Ratio<i128>;
 pub type Vec2i = Vector2<i64>;
@@ -52,28 +53,41 @@ impl TryFrom<char> for Direction {
 }
 
 impl Direction {
-    pub const VALUES: [Direction; 4] = [
-        Direction::North,
-        Direction::East,
-        Direction::South,
-        Direction::West,
-    ];
+    pub const VALUES: [Self; 4] = [Self::North, Self::East, Self::South, Self::West];
 
-    pub fn opposite(&self) -> Direction {
+    pub fn opposite(&self) -> Self {
         match self {
-            Direction::North => Direction::South,
-            Direction::South => Direction::North,
-            Direction::East => Direction::West,
-            Direction::West => Direction::East,
+            Self::North => Self::South,
+            Self::South => Self::North,
+            Self::East => Self::West,
+            Self::West => Self::East,
+        }
+    }
+
+    pub fn rotate_ccw(&self) -> Direction {
+        match self {
+            Self::North => Self::West,
+            Self::South => Self::East,
+            Self::East => Self::North,
+            Self::West => Self::South,
+        }
+    }
+
+    pub fn rotate_cw(&self) -> Direction {
+        match self {
+            Self::North => Self::East,
+            Self::South => Self::West,
+            Self::East => Self::South,
+            Self::West => Self::North,
         }
     }
 
     pub fn vec(&self) -> Vec2i {
         match self {
-            Direction::North => Vec2i::new(0, -1),
-            Direction::South => Vec2i::new(0, 1),
-            Direction::East => Vec2i::new(1, 0),
-            Direction::West => Vec2i::new(-1, 0),
+            Self::North => Vec2i::new(0, -1),
+            Self::South => Vec2i::new(0, 1),
+            Self::East => Vec2i::new(1, 0),
+            Self::West => Vec2i::new(-1, 0),
         }
     }
 
@@ -187,8 +201,21 @@ impl<T> IndexMut<Vec2i> for Grid<T> {
     }
 }
 
-pub fn parse_whitespace<T: FromStr, B: FromIterator<T>>(s: &str) -> Result<B, <T as FromStr>::Err> {
+pub fn parse_split_whitespace<T: FromStr, B: FromIterator<T>>(
+    s: &str,
+) -> Result<B, <T as FromStr>::Err> {
     s.split_whitespace()
+        .map(str::parse)
+        .collect::<Result<_, _>>()
+}
+
+pub fn parse_split<T: FromStr, B: FromIterator<T>>(
+    s: &str,
+    pat: char,
+) -> Result<B, <T as FromStr>::Err> {
+    s.split(pat)
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
         .map(str::parse)
         .collect::<Result<_, _>>()
 }
@@ -199,4 +226,36 @@ pub fn parse_lines<T: FromStr, B: FromIterator<T>>(s: &str) -> Result<B, <T as F
         .filter(|l| !l.is_empty())
         .map(str::parse)
         .collect::<Result<_, _>>()
+}
+
+#[derive(Error, Debug)]
+pub enum ParseVecError<T> {
+    #[error("missing element")]
+    MissingElement,
+    #[error("too many elements")]
+    TooManyElements,
+    #[error("parse error")]
+    ParseError(#[from] T),
+}
+
+pub fn parse_vec<T: Scalar + FromStr, const D: usize>(
+    s: &str,
+) -> Result<SVector<T, D>, ParseVecError<<T as FromStr>::Err>> {
+    let mut it = s
+        .trim_matches(|c: char| matches!(c, '(' | ')' | '[' | ']' | '{' | '}' | '|') || c.is_whitespace())
+        .split(|c: char| matches!(c, ',' | ';' | '|') || c.is_whitespace())
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(str::parse);
+
+    let mut data: [Option<T>; D] = std::array::from_fn(|_| None);
+    for elem in data.iter_mut() {
+        *elem = Some(it.next().ok_or(ParseVecError::MissingElement)??);
+    }
+
+    if it.next().is_some() {
+        return Err(ParseVecError::TooManyElements);
+    }
+
+    Ok(SVector::from_iterator(data.into_iter().flatten()))
 }

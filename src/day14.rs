@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
-use crate::common::{Direction, Grid, Vec2i};
 use aoc_runner_derive::{aoc, aoc_generator};
 use rustc_hash::FxHashMap;
+
+use crate::common::{Direction, Grid, Vec2i};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum Tile {

@@ -3,7 +3,7 @@ use std::str::FromStr;
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 
-use crate::common::parse_lines;
+use crate::common::{parse_lines, parse_split};
 
 #[derive(Debug, Default)]
 pub struct Draw {
@@ -16,9 +16,9 @@ impl FromStr for Draw {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        s.split(", ")
+        s.split(',')
             .try_fold(Draw::default(), |mut a, e| {
-                let Some((n, color)) = e.splitn(2, ' ').collect_tuple() else {
+                let Some((n, color)) = e.split_whitespace().collect_tuple() else {
                     return Err(());
                 };
 
@@ -57,11 +57,7 @@ impl FromStr for Game {
 
         Ok(Game {
             id: id.parse().map_err(|_| ())?,
-            draws: draws
-                .split("; ")
-                .map(str::parse)
-                .collect::<Result<_, _>>()
-                .map_err(|_| ())?,
+            draws: parse_split(draws, ';').map_err(|_| ())?,
         })
     }
 }

@@ -1,8 +1,9 @@
 use std::str::FromStr;
 
-use crate::common::parse_lines;
 use aoc_runner_derive::{aoc, aoc_generator};
 use rustc_hash::FxHashMap;
+
+use crate::common::{parse_lines, parse_split};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum RuleTarget {
@@ -158,13 +159,10 @@ impl FromStr for Workflow {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            rules: s
-                .trim_matches(|c: char| c == '{' || c == '}' || c.is_whitespace())
-                .split(',')
-                .map(str::trim)
-                .filter(|s| !s.is_empty())
-                .map(str::parse)
-                .collect::<Result<_, _>>()?,
+            rules: parse_split(
+                s.trim_matches(|c: char| c == '{' || c == '}' || c.is_whitespace()),
+                ',',
+            )?,
         })
     }
 }

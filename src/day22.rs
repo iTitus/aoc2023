@@ -1,10 +1,9 @@
 use std::str::FromStr;
 
 use aoc_runner_derive::{aoc, aoc_generator};
-use itertools::Itertools;
 use rustc_hash::{FxHashMap, FxHashSet};
 
-use crate::common::{parse_lines, Vec2i, Vec3i};
+use crate::common::{parse_lines, parse_vec, Vec2i, Vec3i};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct Brick {
@@ -16,19 +15,10 @@ impl FromStr for Brick {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        fn parse_vec3i(s: &str) -> Result<Vec3i, ()> {
-            let (x, y, z) = s.split(',').map(str::trim).collect_tuple().ok_or(())?;
-            Ok(Vec3i::new(
-                x.parse().map_err(|_| ())?,
-                y.parse().map_err(|_| ())?,
-                z.parse().map_err(|_| ())?,
-            ))
-        }
-
         let (min, max) = s.split_once('~').ok_or(())?;
         Ok(Self {
-            min: parse_vec3i(min)?,
-            max: parse_vec3i(max)?,
+            min: parse_vec(min).map_err(|_| ())?,
+            max: parse_vec(max).map_err(|_| ())?,
         })
     }
 }

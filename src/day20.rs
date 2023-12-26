@@ -5,6 +5,8 @@ use itertools::Itertools;
 use num::Integer;
 use rustc_hash::FxHashMap;
 
+use crate::common::parse_split;
+
 #[derive(Debug, Clone)]
 pub enum ModuleType {
     FlipFlop(bool),
@@ -67,12 +69,7 @@ pub fn input_generator(input: &str) -> FxHashMap<String, ModuleConfiguration> {
                 name.to_string(),
                 ModuleConfiguration {
                     module_type,
-                    outputs: outputs
-                        .split(',')
-                        .map(str::trim)
-                        .filter(|s| !s.is_empty())
-                        .map(str::to_string)
-                        .collect(),
+                    outputs: parse_split(outputs, ',').map_err(|_| ())?,
                 },
             ))
         })

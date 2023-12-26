@@ -1,8 +1,9 @@
 use std::str::FromStr;
 
-use crate::common::Vec2i;
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
+
+use crate::common::Vec2i;
 
 #[derive(Debug)]
 pub struct Universe {

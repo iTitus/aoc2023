@@ -1,10 +1,13 @@
+use std::collections::HashMap;
+
 use aoc_runner_derive::{aoc, aoc_generator};
 use rustc_hash::FxHashMap;
-use std::collections::HashMap;
+
+use crate::common::parse_split;
 
 #[aoc_generator(day15)]
 pub fn input_generator(input: &str) -> Vec<String> {
-    input.split(',').map(|s| s.trim().to_string()).collect()
+    parse_split(input, ',').unwrap()
 }
 
 fn hash(s: &str) -> u8 {

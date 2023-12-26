@@ -34,7 +34,7 @@ impl FromStr for Map {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (instructions, graph) = s.split("\n\n").collect_tuple().ok_or(())?;
+        let (instructions, graph) = s.split_once("\n\n").ok_or(())?;
         let instructions = instructions
             .trim()
             .chars()
@@ -49,6 +49,7 @@ impl FromStr for Map {
                 let children = children
                     .trim_matches(|c: char| c == '(' || c == ')' || c.is_whitespace())
                     .split(',')
+                    .map(str::trim)
                     .map(|s| s.trim().to_string())
                     .collect_tuple()
                     .ok_or(())?;

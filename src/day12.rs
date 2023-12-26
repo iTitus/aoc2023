@@ -4,7 +4,7 @@ use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use nalgebra::DMatrix;
 
-use crate::common::parse_lines;
+use crate::common::{parse_lines, parse_split};
 
 #[derive(Debug, Copy, Clone)]
 pub enum Spring {
@@ -44,11 +44,7 @@ impl FromStr for Springs {
                 .chars()
                 .map(Spring::try_from)
                 .collect::<Result<Vec<_>, _>>()?,
-            amounts: amounts
-                .split(',')
-                .map(str::parse)
-                .collect::<Result<Vec<_>, _>>()
-                .map_err(|_| ())?,
+            amounts: parse_split(amounts, ',').map_err(|_| ())?,
         })
     }
 }

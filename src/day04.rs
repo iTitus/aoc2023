@@ -4,7 +4,7 @@ use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
 
-use crate::common::{parse_lines, parse_whitespace};
+use crate::common::{parse_lines, parse_split_whitespace};
 
 #[derive(Debug)]
 pub struct Card {
@@ -30,8 +30,8 @@ impl FromStr for Card {
 
         Ok(Card {
             _id: id.trim().parse().map_err(|_| ())?,
-            winning_numbers: parse_whitespace(winning_numbers).map_err(|_| ())?,
-            my_numbers: parse_whitespace(my_numbers).map_err(|_| ())?,
+            winning_numbers: parse_split_whitespace(winning_numbers).map_err(|_| ())?,
+            my_numbers: parse_split_whitespace(my_numbers).map_err(|_| ())?,
         })
     }
 }
