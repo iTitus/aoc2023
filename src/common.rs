@@ -5,7 +5,7 @@ use std::str::FromStr;
 
 use nalgebra::{Dim, Matrix, Scalar, Storage, Vector2};
 use nalgebra::Vector3;
-use num::{Rational64, Zero};
+use num::{Rational64, Signed, Zero};
 use num::rational::Ratio;
 
 pub type Rational128 = Ratio<i128>;
@@ -16,11 +16,11 @@ pub type Vec3i = Vector3<i64>;
 pub type Vec3r = Vector3<Rational64>;
 pub type Vec3r128 = Vector3<Rational128>;
 
-pub fn lp1_norm<T: Scalar + Zero, R: Dim, C: Dim, S: Storage<T, R, C>>(
+pub fn lp1_norm<T: Scalar + Signed, R: Dim, C: Dim, S: Storage<T, R, C>>(
     v: &Matrix<T, R, C, S>,
 ) -> T {
     match v.shape() {
-        (1, _) | (_, 1) => v.fold(T::zero(), |a, e| a + e),
+        (1, _) | (_, 1) => v.fold(T::zero(), |a, e| a + e.abs()),
         _ => {
             panic!("lp1 norm is only implemented for vectors")
         }
