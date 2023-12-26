@@ -41,10 +41,10 @@ impl TryFrom<char> for Direction {
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
         Ok(match value {
-            'N' | 'U' => Self::North,
-            'S' | 'D' => Self::South,
-            'E' | 'R' => Self::East,
-            'W' | 'L' => Self::West,
+            'N' | 'U' | '^' => Self::North,
+            'S' | 'D' | 'v' => Self::South,
+            'E' | 'R' | '>' => Self::East,
+            'W' | 'L' | '<' => Self::West,
             _ => {
                 return Err(());
             }
