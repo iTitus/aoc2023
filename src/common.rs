@@ -1,21 +1,24 @@
+use nalgebra::{Dim, Matrix, Matrix2, Scalar, Storage, Vector2};
+use nalgebra::{SVector, Vector3};
+use num::rational::Ratio;
+use num::{Rational64, Signed};
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::ops::{Index, IndexMut};
 use std::str::FromStr;
-
-use nalgebra::{Dim, Matrix, Scalar, Storage, Vector2};
-use nalgebra::{SVector, Vector3};
-use num::rational::Ratio;
-use num::{Rational64, Signed};
 use thiserror::Error;
 
 pub type Rational128 = Ratio<i128>;
 pub type Vec2i = Vector2<i64>;
 pub type Vec2r = Vector2<Rational64>;
 pub type Vec2r128 = Vector2<Rational128>;
+pub type Vec2f = Vector2<f64>;
 pub type Vec3i = Vector3<i64>;
 pub type Vec3r = Vector3<Rational64>;
 pub type Vec3r128 = Vector3<Rational128>;
+pub type Mat2i = Matrix2<i64>;
+pub type Mat2r = Matrix2<Rational64>;
+pub type Mat2r128 = Matrix2<Rational128>;
 
 pub fn lp1_norm<T: Scalar + Signed, R: Dim, C: Dim, S: Storage<T, R, C>>(
     v: &Matrix<T, R, C, S>,
@@ -140,6 +143,22 @@ where
     }
 }
 
+impl<T: Clone> Grid<T> {
+    pub fn new_from_element(size_x: usize, size_y: usize, element: T) -> Self {
+        Self {
+            size_x,
+            size_y,
+            grid: vec![element; size_x * size_y],
+        }
+    }
+}
+
+impl<T: Default + Clone> Grid<T> {
+    pub fn new_from_default(size_x: usize, size_y: usize) -> Self {
+        Self::new_from_element(size_x, size_y, T::default())
+    }
+}
+
 impl<T> Grid<T> {
     pub fn in_bounds(&self, pos: &Vec2i) -> bool {
         pos.x >= 0 && (pos.x as usize) < self.size_x && pos.y >= 0 && (pos.y as usize) < self.size_y
@@ -204,9 +223,7 @@ impl<T> IndexMut<Vec2i> for Grid<T> {
 pub fn parse_split_whitespace<T: FromStr, B: FromIterator<T>>(
     s: &str,
 ) -> Result<B, <T as FromStr>::Err> {
-    s.split_whitespace()
-        .map(str::parse)
-        .collect::<Result<_, _>>()
+    s.split_whitespace().map(str::parse).collect()
 }
 
 pub fn parse_split<T: FromStr, B: FromIterator<T>>(
@@ -217,7 +234,7 @@ pub fn parse_split<T: FromStr, B: FromIterator<T>>(
         .map(str::trim)
         .filter(|s| !s.is_empty())
         .map(str::parse)
-        .collect::<Result<_, _>>()
+        .collect()
 }
 
 pub fn parse_lines<T: FromStr, B: FromIterator<T>>(s: &str) -> Result<B, <T as FromStr>::Err> {
