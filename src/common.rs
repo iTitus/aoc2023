@@ -126,8 +126,8 @@ where
             .flat_map(|l| {
                 size_y += 1;
                 match size_x {
-                    None => size_x = Some(l.len() as _),
-                    Some(size_x) if size_x == l.len() as _ => {}
+                    None => size_x = Some(l.len()),
+                    Some(size_x) if size_x == l.len() => {}
                     _ => {
                         panic!("non rectangular grid");
                     }
